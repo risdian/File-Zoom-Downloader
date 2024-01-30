@@ -139,7 +139,7 @@ class SchedulePage(tk.Frame):
 
         # Create a Text widget inside the download_list_frame for output
         self.text_widget = tk.Text(download_list_frame, height=10, width=50)
-        self.text_widget.grid(row=13, column=0, columnspan=3, sticky="nsew", padx=10, pady=10)
+        self.text_widget.grid(row=13, column=0, columnspan=2, sticky="nsew", padx=10, pady=10)
         self.text_widget.pack(expand=True, fill='both')
 
         # Redirect standard output to text_widget
@@ -155,7 +155,7 @@ class SchedulePage(tk.Frame):
         # Create the Treeview widget for the recorded download table
         self.user_tree = ttk.Treeview(self, selectmode='extended', columns=("Topic", "ID",  "Type", "Start Date", "End Date", "Download"))
         # Position the Treeview on the right side
-        self.user_tree.grid(row=0, column=3, rowspan=8, padx=10, pady=10, sticky="nsew")  # Adjust rowspan as needed
+        self.user_tree.grid(row=15, column=0, columnspan=2, rowspan=8, padx=10, pady=10)  # Adjust rowspan as needed
         self.user_tree.column("#0", width=0, stretch=tk.NO)
 
         # Define the column headings
