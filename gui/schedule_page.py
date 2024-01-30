@@ -80,21 +80,21 @@ class SchedulePage(tk.Frame):
         self.end_date_entry.insert(0, '2024-01-29')
         self.end_date_entry.grid(row=3, column=1, padx=5, pady=5)
 
-        download_start_time_label = tk.Label(self, text="Start Time:")
-        download_start_time_label.grid(row=4, column=0, padx=5, pady=5)
+        # download_start_time_label = tk.Label(self, text="Start Time:")
+        # download_start_time_label.grid(row=4, column=0, padx=5, pady=5)
 
-        self.start_time_entry = tk.Entry(self)
-        self.start_time_entry.insert(0, '01:30')
-        self.start_time_entry['state'] = 'disabled'  # Set the state to 'disabled'
-        self.start_time_entry.grid(row=4, column=1, padx=5, pady=5)
+        # self.start_time_entry = tk.Entry(self)
+        # self.start_time_entry.insert(0, '01:30')
+        # self.start_time_entry['state'] = 'disabled'  # Set the state to 'disabled'
+        # self.start_time_entry.grid(row=4, column=1, padx=5, pady=5)
 
-        download_end_time_label = tk.Label(self, text="End Time Time:")
-        download_end_time_label.grid(row=5, column=0, padx=5, pady=5)
+        # download_end_time_label = tk.Label(self, text="End Time Time:")
+        # download_end_time_label.grid(row=5, column=0, padx=5, pady=5)
 
-        self.end_time_entry = tk.Entry(self)
-        self.end_time_entry.insert(0, '13:30')
-        self.end_time_entry['state'] = 'disabled'  # Set the state to 'disabled'
-        self.end_time_entry.grid(row=5, column=1, padx=5, pady=5)
+        # self.end_time_entry = tk.Entry(self)
+        # self.end_time_entry.insert(0, '13:30')
+        # self.end_time_entry['state'] = 'disabled'  # Set the state to 'disabled'
+        # self.end_time_entry.grid(row=5, column=1, padx=5, pady=5)
 
         download_time_label = tk.Label(self, text="Download Time:")
         download_time_label.grid(row=6, column=0, padx=5, pady=5)
@@ -153,17 +153,15 @@ class SchedulePage(tk.Frame):
 
         # test
         # Create the Treeview widget for the recorded download table
-        self.user_tree = ttk.Treeview(self, selectmode='extended', columns=("Topic", "ID",  "Type", "Start Date", "End Date", "Download"))
+        self.user_tree = ttk.Treeview(self, selectmode='extended', columns=("Topic", "Type", "Start Date", "Download"))
         # Position the Treeview on the right side
-        self.user_tree.grid(row=15, column=0, columnspan=2, rowspan=8, padx=10, pady=10)  # Adjust rowspan as needed
+        self.user_tree.grid(row=0, column=3, columnspan=2, rowspan=8, padx=10, pady=10)  # Adjust rowspan as needed
         self.user_tree.column("#0", width=0, stretch=tk.NO)
 
         # Define the column headings
         self.user_tree.heading("Topic", text="Topic")
-        self.user_tree.heading("ID", text="ID")
         self.user_tree.heading("Type", text="Type")
         self.user_tree.heading("Start Date", text="Start Date")
-        self.user_tree.heading("End Date", text="End Date")
         self.user_tree.heading("Download", text="Download")
 
         self.user_tree.bind("<Button-2>", self.on_right_click)  # For Windows and Linux
