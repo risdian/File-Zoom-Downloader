@@ -269,7 +269,7 @@ class SchedulePage(tk.Frame):
 
                     start_date, start_time = self.format_datetime(recording['recording_start'])
                     end_date, end_time = self.format_datetime(recording['recording_end'])
-                    item_id = self.user_tree.insert('', 'end', values=(meeting_topic, recording['id'], recording['recording_type'], start_date + ' - ' + start_time, end_date + ' - ' + end_time, download_status))
+                    item_id = self.user_tree.insert('', 'end', values=(meeting_topic, recording['recording_type'], start_date + ' - ' + start_time, download_status))
                     self.download_link_map[item_id] = {
                         "id": recording["id"],
                         "host_id": meeting_host_id,
