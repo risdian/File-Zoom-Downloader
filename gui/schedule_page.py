@@ -154,11 +154,6 @@ class SchedulePage(tk.Frame):
         delete_users_button.grid(row=14, column=0, padx=10, pady=10)  # Adjust position as needed
 
 
-        select_all_user_label = tk.Label(self, text="Select All User:")
-        select_all_user_label.grid(row=15, column=0, padx=5, pady=5)
-
-        select_all_user_checbox = tk.Checkbutton(self, variable=self.all_user_checkbox_state, command=self.toogle_all_user_entries)
-        select_all_user_checbox.grid(row=15, column=1, padx=5, pady=5)  # Notice the row is set to 4
 
 
         # test
@@ -187,8 +182,12 @@ class SchedulePage(tk.Frame):
         self.load_default_settings()
         download_select_button = tk.Button(self, text="Download", command=self.download_selected_check)
         download_select_button.grid(row=8, column=3, padx=5, pady=5)
-        check_all_download_checbox = tk.Checkbutton(self, variable=self.check_all_download,  command=self.update_all_checkboxes)
+        check_all_download_checbox = tk.Checkbutton(self, text="check all",   variable=self.check_all_download,  command=self.update_all_checkboxes)
         check_all_download_checbox.grid(row=9, column=3, padx=5, pady=5)  # Notice the row is set to 4
+
+
+        select_all_user_checbox = tk.Checkbutton(self, text="Select all",  variable=self.all_user_checkbox_state, command=self.toogle_all_user_entries)
+        select_all_user_checbox.grid(row=10, column=3, padx=5, pady=5)  # Notice the row is set to 4
 
     def update_all_checkboxes(self):
         symbol = "/" if self.check_all_download.get() else ">"  # "/" for checked, ">" for unchecked
