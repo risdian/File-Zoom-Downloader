@@ -50,6 +50,8 @@ class SchedulePage(tk.Frame):
             self.grid_columnconfigure(col, weight=1)
 
         self.checkbox_state = tk.BooleanVar()
+        self.all_user_checkbox_state = tk.BooleanVar()
+        self.check_all_download = tk.BooleanVar()
         self.create_context_menu()
 
 
@@ -77,7 +79,7 @@ class SchedulePage(tk.Frame):
         end_date_label.grid(row=3, column=0, padx=5, pady=5)
 
         self.end_date_entry = tk.Entry(self)
-        self.end_date_entry.insert(0, '2024-01-29')
+        self.end_date_entry.insert(0, '2024-02-03')
         self.end_date_entry.grid(row=3, column=1, padx=5, pady=5)
 
         # download_start_time_label = tk.Label(self, text="Start Time:")
@@ -151,41 +153,102 @@ class SchedulePage(tk.Frame):
         delete_users_button = tk.Button(self, text="Delete All Users", command=self.confirm_delete_all)
         delete_users_button.grid(row=14, column=0, padx=10, pady=10)  # Adjust position as needed
 
+
+        select_all_user_label = tk.Label(self, text="Select All User:")
+        select_all_user_label.grid(row=15, column=0, padx=5, pady=5)
+
+        select_all_user_checbox = tk.Checkbutton(self, variable=self.all_user_checkbox_state, command=self.toogle_all_user_entries)
+        select_all_user_checbox.grid(row=15, column=1, padx=5, pady=5)  # Notice the row is set to 4
+
+
         # test
         # Create the Treeview widget for the recorded download table
-        self.user_tree = ttk.Treeview(self, selectmode='extended', columns=("Topic", "Type", "Start Date", "Download"))
+        self.user_tree = ttk.Treeview(self, selectmode='extended', columns=("Checkbox", "Topic", "Type", "Start Date", "Download"))
         # Position the Treeview on the right side
         self.user_tree.grid(row=0, column=3, columnspan=2, rowspan=8, padx=10, pady=10)  # Adjust rowspan as needed
         self.user_tree.column("#0", width=0, stretch=tk.NO)
 
         # Define the column headings
+        self.user_tree.heading("Checkbox", text="Checkbox")
         self.user_tree.heading("Topic", text="Topic")
         self.user_tree.heading("Type", text="Type")
         self.user_tree.heading("Start Date", text="Start Date")
         self.user_tree.heading("Download", text="Download")
+        self.user_tree.column("Checkbox", width=20)  # Adjust width as needed
+
+        # Dictionary to keep track of checkbox states
+        self.checkbox_states = {}
 
         self.user_tree.bind("<Button-2>", self.on_right_click)  # For Windows and Linux
-
+        # Bind the event
+        self.user_tree.bind("<Button-1>", self.toggle_checkbox_select)
         # self.load_user_data()
 
         self.load_default_settings()
+        download_select_button = tk.Button(self, text="Download", command=self.download_selected_check)
+        download_select_button.grid(row=8, column=3, padx=5, pady=5)
+        check_all_download_checbox = tk.Checkbutton(self, variable=self.check_all_download,  command=self.update_all_checkboxes)
+        check_all_download_checbox.grid(row=9, column=3, padx=5, pady=5)  # Notice the row is set to 4
 
+    def update_all_checkboxes(self):
+        symbol = "/" if self.check_all_download.get() else ">"  # "/" for checked, ">" for unchecked
+        for item in self.user_tree.get_children():
+            self.user_tree.set(item, "Checkbox", symbol)  # Update the symbol for all items
+            self.checkbox_states[item] = self.check_all_download.get()  # Update the internal state tracking
 
+    def download_selected_check(self):
+        access_token = get_config_item('access_token')
+
+        checked_items = []  # List to store the IDs of checked items
+
+        # Iterate over all items in the Treeview
+        for item in self.user_tree.get_children():
+            # Check if the item is marked as checked based on the symbol in the "Checkbox" column
+            if self.user_tree.set(item, "Checkbox") == "/":  # Assuming "/" represents checked
+                checked_items.append(item)
+
+        # Now, checked_items contains the IDs of all checked items
+        # You can proceed with your download logic here, using the collected item IDs
+        for item_id in checked_items:
+                if item_id in self.download_link_map:
+                    recording_details = self.download_link_map[item_id]
+
+                    filename, foldername = format_filename(recording_details, recording_details['file_type'], recording_details['file_extension'], recording_details['recording_type'], recording_details['id'])
+
+                    recording_start_str = recording_details['recording_start']  # Replace with your actual date string
+                    parsed_date = parse(recording_start_str)
+                    formatted_date = parsed_date.strftime('%b %Y').upper()
+
+                    folder = self.selected_folder_path +'/'+ formatted_date + '/' + str(parsed_date.day) + '/' + foldername
+                    # Ensure that the directory exists
+                    if not os.path.exists(folder):
+                        os.makedirs(folder)
+                                    
+                    download_url = recording_details["download_url"]  + "?access_token=" + access_token
+                    
+                    self.download_queue.put((item_id, download_url, folder, filename))
+                    record_or_update_download_status(recording_details['host_id'], recording_details['id'], recording_details['meeting_id'], filename, download_url, 'attempted')
+                      
     def toggle_date_time_entries(self):
         if self.checkbox_state.get():
             # Checkbox is checked, disable the date and time entries
             self.start_date_entry['state'] = 'disabled'
             self.end_date_entry['state'] = 'disabled'
             self.download_time_entry['state'] = 'normal'  # Enable if checked
-            self.end_time_entry['state'] = 'normal'
-            self.start_time_entry['state'] = 'normal'
+
         else:
             # Checkbox is not checked, enable the date entries and disable time entry
             self.start_date_entry['state'] = 'normal'
             self.end_date_entry['state'] = 'normal'
             self.download_time_entry['state'] = 'disabled'  # Disable if unchecked
-            self.end_time_entry['state'] = 'disabled'
-            self.start_time_entry['state'] = 'disabled'
+
+
+    def toogle_all_user_entries(self):
+        if self.all_user_checkbox_state.get():
+            self.user_combobox['state'] = 'disabled'
+        else:
+            # Checkbox is not checked, enable the date entries and disable time entry
+            self.user_combobox['state'] = 'normal'
 
     def logout(self):
         # Delete the access token from the database
@@ -242,9 +305,15 @@ class SchedulePage(tk.Frame):
         self.user_combobox['values'] = display_name
 
     def search_meetings(self):
-        selected_user_email = self.user_combobox.get()  # Get the selected user's email
         start_date = self.start_date_entry.get()
         end_date = self.end_date_entry.get()
+        if self.all_user_checkbox_state.get() == 1:
+                print("Search is disabled.")
+                self.get_all_user_from_date()
+                return
+
+        selected_user_email = self.user_combobox.get()  # Get the selected user's email
+
         
         if selected_user_email:
             # Fetch meetings for the selected user
@@ -268,8 +337,9 @@ class SchedulePage(tk.Frame):
                     download_status = 'Downloaded' if downloaded else 'Not Downloaded'
 
                     start_date, start_time = self.format_datetime(recording['recording_start'])
-                    end_date, end_time = self.format_datetime(recording['recording_end'])
-                    item_id = self.user_tree.insert('', 'end', values=(meeting_topic, recording['recording_type'], start_date + ' - ' + start_time, download_status))
+                    item_id = self.user_tree.insert('', 'end', values=(">", meeting_topic, recording['recording_type'], start_date + ' - ' + start_time, download_status))
+                    self.checkbox_states[item_id] = False  # Initially unchecked
+                    # item_id = self.user_tree.insert('', 'end', values=(meeting_topic, recording['recording_type'], start_date + ' - ' + start_time, download_status))
                     self.download_link_map[item_id] = {
                         "id": recording["id"],
                         "host_id": meeting_host_id,
@@ -284,6 +354,23 @@ class SchedulePage(tk.Frame):
                         "status": recording["status"],
                         "recording_type": recording["recording_type"]
                     }
+
+    def toggle_checkbox_select(self, event):
+        # print('njing')
+        region = self.user_tree.identify("region", event.x, event.y)
+        if region == "cell":
+            column = self.user_tree.identify_column(event.x)
+            if column == "#1":  # Assuming the checkbox column is the first one
+                item_id = self.user_tree.identify_row(event.y)
+                if item_id:
+                    # Toggle state
+                    is_checked = self.checkbox_states.get(item_id, False)
+                    new_state = not is_checked
+                    self.checkbox_states[item_id] = new_state
+                    
+                    # Update the symbol in the Treeview
+                    symbol = "/" if new_state else ">"
+                    self.user_tree.set(item_id, "Checkbox", symbol)
 
     def format_datetime(self, dt_str):
         # Convert the ISO format string to a datetime object
@@ -315,7 +402,6 @@ class SchedulePage(tk.Frame):
     def option1(self):
         selected_items = self.user_tree.selection()
         access_token = get_config_item('access_token')
-        selected_user_email = self.user_combobox.get()  # Get the selected user's email
 
         for item_id in selected_items:
             if item_id in self.download_link_map:
@@ -454,6 +540,19 @@ class SchedulePage(tk.Frame):
                 self.download_queue.put((item_id, download_url, folder, filename))
                 record_or_update_download_status(recording_details['host_id'], recording_details['id'], recording_details['meeting_id'], filename, download_url, 'attempted')
 
+    def get_all_user_from_date(self):
+        all_meetings = []
+
+        start_date = self.start_date_entry.get()
+        end_date = self.end_date_entry.get()
+        users = get_all_users()
+
+        for user in users:
+            # Use logging instead of print in production code
+            meetings = fetch_user_recordings(user.display_name, start_date, end_date)
+            all_meetings.extend(meetings)
+
+        self.populate_meetings_in_treeview(all_meetings)
 
 def format_filename(recording, file_type, file_extension, recording_type, recording_id):
     topic = recording['meeting_topic'].replace('/', '&')
