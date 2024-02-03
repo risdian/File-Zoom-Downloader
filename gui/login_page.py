@@ -23,7 +23,7 @@ class LoginPage(tk.Frame):
         self.account_id_entry.insert(0, '')
         self.account_id_entry.grid(row=1, column=1, padx=5, pady=5)
 
-        client_secret_label = tk.Label(self, text="Account ID:")
+        client_secret_label = tk.Label(self, text="Client secret:")
         client_secret_label.grid(row=2, column=0, padx=5, pady=5)
 
         self.client_secret_entry = tk.Entry(self)
