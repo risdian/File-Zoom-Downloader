@@ -52,6 +52,7 @@ class SchedulePage(tk.Frame):
         self.checkbox_state = tk.BooleanVar()
         self.all_user_checkbox_state = tk.BooleanVar()
         self.check_all_download = tk.BooleanVar()
+        self.check_not_download = tk.BooleanVar()
         self.create_context_menu()
 
 
@@ -79,7 +80,9 @@ class SchedulePage(tk.Frame):
         end_date_label.grid(row=3, column=0, padx=5, pady=5)
 
         self.end_date_entry = tk.Entry(self)
-        self.end_date_entry.insert(0, '2024-02-03')
+        today_date = datetime.now().strftime('%Y-%m-%d')  # Get today's date in YYYY-MM-DD format
+
+        self.end_date_entry.insert(0, today_date)
         self.end_date_entry.grid(row=3, column=1, padx=5, pady=5)
 
         # download_start_time_label = tk.Label(self, text="Start Time:")
@@ -189,11 +192,34 @@ class SchedulePage(tk.Frame):
         select_all_user_checbox = tk.Checkbutton(self, text="Select all",  variable=self.all_user_checkbox_state, command=self.toogle_all_user_entries)
         select_all_user_checbox.grid(row=10, column=3, padx=5, pady=5)  # Notice the row is set to 4
 
+        check_not_download_checbox = tk.Checkbutton(self, text="check not download only",   variable=self.check_not_download,  command=self.update_not_download_item_all_checkboxes)
+        check_not_download_checbox.grid(row=11, column=3, padx=5, pady=5)  # Notice the row is set to 4
+
+
     def update_all_checkboxes(self):
         symbol = "/" if self.check_all_download.get() else ">"  # "/" for checked, ">" for unchecked
         for item in self.user_tree.get_children():
             self.user_tree.set(item, "Checkbox", symbol)  # Update the symbol for all items
             self.checkbox_states[item] = self.check_all_download.get()  # Update the internal state tracking
+
+    def update_not_download_item_all_checkboxes(self):
+        # Use the state of self.check_not_download to decide the action
+        if self.check_not_download.get():  # If the checkbox is checked
+            symbol_to_set = "/"  # Symbol for checked
+            state_to_set = True  # Internal state as checked
+        else:  # If the checkbox is unchecked
+            symbol_to_set = ">"  # Symbol for unchecked
+            state_to_set = False  # Internal state as unchecked
+
+        for item in self.user_tree.get_children():
+            # Assume download status is in the TreeView in the 5th column (index 4)
+            download_status = self.user_tree.item(item, 'values')[4]
+            
+            # Apply the action only to items that are not "Downloaded"
+            if download_status != "Downloaded":
+                self.user_tree.set(item, "Checkbox", symbol_to_set)  # Update the symbol for the item
+                self.checkbox_states[item] = state_to_set  # Update internal state
+
 
     def download_selected_check(self):
         access_token = get_config_item('access_token')
